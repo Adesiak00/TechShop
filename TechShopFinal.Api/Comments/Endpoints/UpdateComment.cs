@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using TechShopFinal.Api.Common.Api;
 using TechShopFinal.Api.Common.Api.Extensions;
+using TechShopFinal.Api.Common.Api.Filters;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
 
@@ -25,7 +26,8 @@ public class UpdateComment : IEndpoint
         app.MapPut("/api/comments/{id:guid}", HandleAsync)
             .WithTags("Comments")
             .WithRequestValidation<UpdateCommentRequest>()
-            .EnsureEntityExists<Comment>();
+            .EnsureEntityExists<Comment>()
+            .AddEndpointFilter<EnsureUserOwnsEntityFilter<Comment>>();
     }
 
     private static async Task<NoContent> HandleAsync(

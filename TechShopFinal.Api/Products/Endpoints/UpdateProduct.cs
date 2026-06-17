@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using TechShopFinal.Api.Common.Api;
 using TechShopFinal.Api.Common.Api.Extensions;
+using TechShopFinal.Api.Common.Api.Filters;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
 
@@ -27,7 +28,8 @@ public class UpdateProduct : IEndpoint
         app.MapPut("/api/products/{id:guid}", HandleAsync)
             .WithTags("Products")
             .WithRequestValidation<UpdateProductRequest>()
-            .EnsureEntityExists<Product>();
+            .EnsureEntityExists<Product>()
+            .AddEndpointFilter<EnsureUserOwnsEntityFilter<Product>>();
     }
 
     private static async Task<NoContent> HandleAsync(

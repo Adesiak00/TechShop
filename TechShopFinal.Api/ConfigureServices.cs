@@ -5,6 +5,7 @@ using TechShopFinal.Api.Common.Api;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
 using TechShopFinal.Api.Infrastructure;
+using TechShopFinal.Api.Data.Interceptors;
 
 namespace TechShopFinal.Api;
 
@@ -15,9 +16,15 @@ public static class ConfigureServices
         // 1. Rejestracja automatyczna endpointów z naszej architektury REPR
         builder.Services.AddEndpoints(typeof(ConfigureServices).Assembly);
 
-        // 2. Baza danych SQLite
-        builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+        builder.Services.AddSingleton<SoftDeleteInterceptor>();
+        
+        builder.Services.AddDbContext<AppDbContext>((sp, options) =>
+        {
+            var interceptor = sp.GetRequiredService<SoftDeleteInterceptor>();
+            
+            options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))
+                   .AddInterceptors(interceptor);
+        });
 
         // 3. Identity API, Autentykacja i Autoryzacja (To eliminuje Twój błąd!)
         builder.Services.AddAuthentication();

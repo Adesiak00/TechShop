@@ -23,8 +23,7 @@ public class DeleteCategory : IEndpoint
     {
         var category = await dbContext.Categories.FirstAsync(c => c.Id == id, cancellationToken);
         
-        category.IsDeleted = true;
-        
+        dbContext.Categories.Remove(category);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return TypedResults.NoContent();

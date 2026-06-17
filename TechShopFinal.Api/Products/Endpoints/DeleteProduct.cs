@@ -23,8 +23,7 @@ public class DeleteProduct : IEndpoint
     {
         var product = await dbContext.Products.FirstAsync(p => p.Id == id, cancellationToken);
         
-        product.IsDeleted = true;
-        
+        dbContext.Products.Remove(product);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return TypedResults.NoContent();

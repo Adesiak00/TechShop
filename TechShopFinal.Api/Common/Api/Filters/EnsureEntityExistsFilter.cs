@@ -1,25 +1,25 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using TechShopFinal.Api.Common.Api.Results;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
-using TechShopFinal.Api.Common.Api.Results;
 
 namespace TechShopFinal.Api.Common.Api.Filters;
 
-public class EnsureEntityExistsFilter<TEntity> : IEndpointFilter where TEntity : class, IEntity
+public class EnsureEntityExistsFilter<TEntity>(AppDbContext dbContext) : IEndpointFilter where TEntity : class, IEntity
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
-        var id = context.Arguments.OfType<Guid>().FirstOrDefault();
-        
-        if (id != Guid.Empty)
+        if (!context.HttpContext.Request.RouteValues.TryGetValue("id", out var idValue) || 
+            !Guid.TryParse(idValue?.ToString(), out var id))
         {
-            var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
-            var exists = await dbContext.Set<TEntity>().AnyAsync(x => x.Id == id);
+            return TypedResults.Problem("Brak poprawnego ID w ścieżce lub ma niepoprawny format.", statusCode: StatusCodes.Status400BadRequest);
+        }
 
-            if (!exists)
-            {
-                return NotFoundProblem.Create<TEntity>(id);
-            }
+        var exists = await dbContext.Set<TEntity>().AnyAsync(x => x.Id == id);
+        if (!exists) 
+        {
+            return NotFoundProblem.Create<TEntity>(id);
         }
 
         return await next(context);

@@ -18,6 +18,7 @@
     <Folder Include="Common\Api\Results\" />
     <Folder Include="Common\Exceptions\" />
     <Folder Include="Common\Pagination\" />
+    <Folder Include="Data\Interceptors\" />
     <Folder Include="Data\Migrations\" />
     <Folder Include="Infrastructure\" />
   </ItemGroup>

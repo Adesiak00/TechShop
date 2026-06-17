@@ -1,36 +1,33 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using TechShopFinal.Api.Authentication;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
 
 namespace TechShopFinal.Api.Common.Api.Filters;
-public interface IOwnedEntity : IEntity
-{
-    Guid CreatorUserId { get; }
-}
 
-public class EnsureUserOwnsEntityFilter<TEntity> : IEndpointFilter where TEntity : class, IOwnedEntity
+public class EnsureUserOwnsEntityFilter<TEntity>(AppDbContext dbContext) : IEndpointFilter where TEntity : class, IEntity
 {
     public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
     {
-        var id = context.Arguments.OfType<Guid>().FirstOrDefault();
-        
-        if (id != Guid.Empty)
+        if (!context.HttpContext.Request.RouteValues.TryGetValue("id", out var idValue) || 
+            !Guid.TryParse(idValue?.ToString(), out var id))
         {
-            var userId = context.HttpContext.User.GetUserId();
-            var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
-            
-            // Szukamy encji
-            var entity = await dbContext.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+             return TypedResults.Problem("Brak poprawnego ID w ścieżce.", statusCode: StatusCodes.Status400BadRequest);
+        }
 
-            if (entity is not null && entity.CreatorUserId != userId)
-            {
-                return TypedResults.Problem(
-                    statusCode: StatusCodes.Status403Forbidden,
-                    title: "Forbidden",
-                    detail: "You do not have permission to modify this resource."
-                );
-            }
+        var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        {
+            return TypedResults.Problem("Brak autoryzacji. Zaloguj się.", statusCode: StatusCodes.Status401Unauthorized);
+        }
+
+        var isOwner = await dbContext.Set<TEntity>()
+            .AnyAsync(x => x.Id == id && EF.Property<string>(x, "UserId") == userId);
+
+        if (!isOwner)
+        {
+            return TypedResults.Problem("Nie masz uprawnień do modyfikacji tego zasobu.", statusCode: StatusCodes.Status403Forbidden);
         }
 
         return await next(context);

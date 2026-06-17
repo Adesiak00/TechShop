@@ -1,34 +1,38 @@
-using System;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TechShopFinal.Api.Infrastructure;
 
-public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger, IProblemDetailsService problemDetailsService) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        logger.LogError(exception, "An unhandled exception occurred: {ExceptionMessage}", exception.Message);
+        logger.LogError(exception, "Wystąpił nieobsłużony wyjątek: {ExceptionMessage}", exception.Message);
 
-        var (statusCode, title) = exception switch
+        var statusCode = exception switch
         {
-            UnauthorizedAccessException => (StatusCodes.Status403Forbidden, "Forbidden"),
-            ArgumentException => (StatusCodes.Status400BadRequest, "Bad Request"),
-            _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
+            UnauthorizedAccessException => StatusCodes.Status403Forbidden,
+            ArgumentException => StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status500InternalServerError
         };
 
-        var problemDetails = new ProblemDetails
-        {
-            Status = statusCode,
-            Title = title,
-            Detail = exception.Message 
-        };
+        httpContext.Response.StatusCode = statusCode;
 
-        httpContext.Response.StatusCode = problemDetails.Status.Value;
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        await problemDetailsService.WriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            Exception = exception,
+            ProblemDetails = new ProblemDetails
+            {
+                Status = statusCode,
+                Title = statusCode == StatusCodes.Status500InternalServerError ? "Internal Server Error" : "Bad Request",
+                Detail = exception.Message
+            }
+        });
 
         return true;
     }

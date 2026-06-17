@@ -44,8 +44,8 @@ public static class DataSeeder
                     Price = 14999.00m,
                     ImageUrl = "https://example.com/macbook.png",
                     CreationDate = DateTime.UtcNow,
-                    CreatorUserId = adminUser.Id, // Powiązanie z naszym stworzonym adminem
-                    Categories = [laptops]        // Relacja Many-to-Many
+                    CreatorUserId = adminUser.Id, 
+                    Categories = [laptops]        
                 };
 
                 var product2 = new Product

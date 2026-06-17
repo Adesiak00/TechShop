@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
@@ -22,11 +23,37 @@ public static class ConfigureApp
         // 3. CORS (przed autoryzacją)
         app.UseCors("AllowFrontend");
 
-        // 4. Autentykacja i Autoryzacja (Kolejność ma znaczenie!)
+       // 4. Autentykacja i Autoryzacja (Kolejność ma znaczenie!)
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // 5. Mapowanie Endpointów aplikacji i Identity
+        app.Use(async (context, next) =>
+        {
+            await next();
+
+            if ((context.Response.StatusCode == StatusCodes.Status401Unauthorized || 
+                 context.Response.StatusCode == StatusCodes.Status403Forbidden) && 
+                !context.Response.HasStarted)
+            {
+                var problemDetailsService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
+                
+                context.Response.ContentType = "application/problem+json";
+                
+                await problemDetailsService.WriteAsync(new ProblemDetailsContext
+                {
+                    HttpContext = context,
+                    ProblemDetails = new ProblemDetails
+                    {
+                        Status = context.Response.StatusCode,
+                        Title = context.Response.StatusCode == StatusCodes.Status401Unauthorized ? "Unauthorized" : "Forbidden",
+                        Detail = context.Response.StatusCode == StatusCodes.Status401Unauthorized 
+                            ? "Brak prawidłowego tokenu uwierzytelniającego lub Twój token wygasł." 
+                            : "Nie masz wystarczających uprawnień do wykonania tej operacji."
+                    }
+                });
+            }
+        });
+
         app.MapEndpoints();
         app.MapGroup("/api/auth").MapIdentityApi<AppUser>();
 
