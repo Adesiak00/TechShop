@@ -13,7 +13,8 @@ public class DeleteProduct : IEndpoint
     {
         app.MapDelete("/api/products/{id:guid}", HandleAsync)
             .WithTags("Products")
-            .EnsureEntityExists<Product>();
+            .EnsureEntityExists<Product>()
+            .RequireAuthorization(policy => policy.RequireRole("Admin")); 
     }
 
     private static async Task<NoContent> HandleAsync(

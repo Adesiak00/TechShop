@@ -13,7 +13,8 @@ public class DeleteCategory : IEndpoint
     {
         app.MapDelete("/api/categories/{id:guid}", HandleAsync)
             .WithTags("Categories")
-            .EnsureEntityExists<Category>();
+            .EnsureEntityExists<Category>()
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
 
     private static async Task<NoContent> HandleAsync(

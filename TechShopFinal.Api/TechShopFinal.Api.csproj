@@ -21,6 +21,8 @@
     <Folder Include="Data\Interceptors\" />
     <Folder Include="Data\Migrations\" />
     <Folder Include="Infrastructure\" />
+    <Folder Include="Users\" />
+    <Folder Include="Users\Endpoints\" />
   </ItemGroup>
 
   <ItemGroup>
