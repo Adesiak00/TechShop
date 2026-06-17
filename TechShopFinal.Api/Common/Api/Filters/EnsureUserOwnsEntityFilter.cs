@@ -1,6 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using TechShopFinal.Api.Authentication; // Używamy Twojego rozszerzenia!
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
 
@@ -16,18 +16,18 @@ public class EnsureUserOwnsEntityFilter<TEntity>(AppDbContext dbContext) : IEndp
              return TypedResults.Problem("Invalid ID format.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
+        var userId = context.HttpContext.User.GetUserId();
+        if (userId == Guid.Empty)
         {
-            return TypedResults.Problem("Unauthorized, login required.", statusCode: StatusCodes.Status401Unauthorized);
+            return TypedResults.Problem("No authorization. Please log in.", statusCode: StatusCodes.Status401Unauthorized);
         }
 
         var isOwner = await dbContext.Set<TEntity>()
-            .AnyAsync(x => x.Id == id && EF.Property<string>(x, "UserId") == userId);
+            .AnyAsync(x => x.Id == id && EF.Property<Guid>(x, "CreatorUserId") == userId);
 
         if (!isOwner)
         {
-            return TypedResults.Problem("Unauthorized, you are not the owner of this resource.", statusCode: StatusCodes.Status403Forbidden);
+            return TypedResults.Problem("You are not the owner of this resource.", statusCode: StatusCodes.Status403Forbidden);
         }
 
         return await next(context);

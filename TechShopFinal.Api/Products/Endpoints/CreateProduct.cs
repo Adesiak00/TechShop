@@ -1,8 +1,8 @@
-using System.Security.Claims; // Nowy using
+using System.Security.Claims;
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
-using TechShopFinal.Api.Authentication; // Nowy using dla naszego rozszerzenia
+using TechShopFinal.Api.Authentication;
 using TechShopFinal.Api.Common.Api;
 using TechShopFinal.Api.Common.Api.Extensions;
 using TechShopFinal.Api.Data;
@@ -10,7 +10,9 @@ using TechShopFinal.Api.Data.Types;
 
 namespace TechShopFinal.Api.Products.Endpoints;
 
-public record ProductResponse(Guid Id, string Title, string? Description, decimal Price, string? ImageUrl, DateTime CreationDate, Guid CreatorUserId, List<Guid> CategoryIds);
+// NOWE DTO: Dodajemy CategoryDto i zmieniamy List<Guid> na List<CategoryDto>
+public record CategoryDto(Guid Id, string Name);
+public record ProductResponse(Guid Id, string Title, string? Description, decimal Price, string? ImageUrl, DateTime CreationDate, Guid CreatorUserId, List<CategoryDto> Categories);
 
 public record CreateProductRequest(string Title, string? Description, decimal Price, string? ImageUrl, List<Guid> CategoryIds);
 
@@ -59,10 +61,11 @@ public class CreateProduct : IEndpoint
         dbContext.Products.Add(product);
         await dbContext.SaveChangesAsync(cancellationToken);
 
+        // ZMIANA W MAPOWANIU: Mapujemy obiekty Category na CategoryDto
         var response = new ProductResponse(
             product.Id, product.Title, product.Description, product.Price, 
             product.ImageUrl, product.CreationDate, product.CreatorUserId, 
-            product.Categories.Select(c => c.Id).ToList());
+            product.Categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList());
 
         return TypedResults.Created($"/api/products/{product.Id}", response);
     }

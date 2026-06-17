@@ -29,7 +29,7 @@ public class GetProductById : IEndpoint
         var response = new ProductResponse(
             product.Id, product.Title, product.Description, product.Price, 
             product.ImageUrl, product.CreationDate, product.CreatorUserId, 
-            product.Categories.Select(c => c.Id).ToList());
+            product.Categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList());
 
         return TypedResults.Ok(response);
     }

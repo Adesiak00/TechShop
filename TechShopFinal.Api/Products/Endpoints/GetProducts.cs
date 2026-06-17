@@ -26,7 +26,7 @@ public class GetProducts : IEndpoint
             .Select(p => new ProductResponse(
                 p.Id, p.Title, p.Description, p.Price, p.ImageUrl, 
                 p.CreationDate, p.CreatorUserId, 
-                p.Categories.Select(c => c.Id).ToList()));
+                p.Categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList()));
 
         var pagedResult = await query.ToPagedResultAsync(
             pagedRequest.PageNumber, 
