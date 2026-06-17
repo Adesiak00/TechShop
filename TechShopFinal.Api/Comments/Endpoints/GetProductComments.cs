@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using TechShopFinal.Api.Common.Api;
 using TechShopFinal.Api.Common.Api.Extensions;
+using TechShopFinal.Api.Common.Pagination;
 using TechShopFinal.Api.Data;
 using TechShopFinal.Api.Data.Types;
 
@@ -16,18 +17,24 @@ public class GetProductComments : IEndpoint
             .EnsureEntityExists<Product>();
     }
 
-    private static async Task<Ok<List<CommentResponse>>> HandleAsync(
+    private static async Task<Ok<PagedResult<CommentResponse>>> HandleAsync(
         Guid productId,
+        [AsParameters]PagedRequest pagedRequest,
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        var comments = await dbContext.Comments
+        var query = dbContext.Comments
             .AsNoTracking()
             .Where(c => c.ProductId == productId)
             .OrderByDescending(c => c.CreationDate)
-            .Select(c => new CommentResponse(c.Id, c.ProductId, c.Description, c.CreationDate, c.CreatorUserId))
-            .ToListAsync(cancellationToken);
+            .Select(c => new CommentResponse(c.Id, c.ProductId, c.Description, c.CreationDate, c.CreatorUserId));
 
-        return TypedResults.Ok(comments);
+
+        var pagedResult = await query.ToPagedResultAsync(
+            pagedRequest.PageNumber,
+            pagedRequest.PageSize,
+            cancellationToken);
+        
+        return TypedResults.Ok(pagedResult);
     }
 }

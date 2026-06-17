@@ -13,13 +13,13 @@ public class EnsureUserOwnsEntityFilter<TEntity>(AppDbContext dbContext) : IEndp
         if (!context.HttpContext.Request.RouteValues.TryGetValue("id", out var idValue) || 
             !Guid.TryParse(idValue?.ToString(), out var id))
         {
-             return TypedResults.Problem("Brak poprawnego ID w ścieżce.", statusCode: StatusCodes.Status400BadRequest);
+             return TypedResults.Problem("Invalid ID format.", statusCode: StatusCodes.Status400BadRequest);
         }
 
         var userId = context.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId))
         {
-            return TypedResults.Problem("Brak autoryzacji. Zaloguj się.", statusCode: StatusCodes.Status401Unauthorized);
+            return TypedResults.Problem("Unauthorized, login required.", statusCode: StatusCodes.Status401Unauthorized);
         }
 
         var isOwner = await dbContext.Set<TEntity>()
@@ -27,7 +27,7 @@ public class EnsureUserOwnsEntityFilter<TEntity>(AppDbContext dbContext) : IEndp
 
         if (!isOwner)
         {
-            return TypedResults.Problem("Nie masz uprawnień do modyfikacji tego zasobu.", statusCode: StatusCodes.Status403Forbidden);
+            return TypedResults.Problem("Unauthorized, you are not the owner of this resource.", statusCode: StatusCodes.Status403Forbidden);
         }
 
         return await next(context);
