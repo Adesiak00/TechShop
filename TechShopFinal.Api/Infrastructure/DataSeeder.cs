@@ -7,8 +7,19 @@ namespace TechShopFinal.Api.Infrastructure;
 
 public static class DataSeeder
 {
-    public static async Task SeedDataAsync(AppDbContext context, UserManager<AppUser> userManager)
+    // ZMIANA: Dodajemy RoleManager do argumentów
+    public static async Task SeedDataAsync(AppDbContext context, UserManager<AppUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
     {
+        // 1. Tworzenie podstawowych ról w systemie
+        var roles = new[] { "Admin", "User" };
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            }
+        }
+
         var adminEmail = "admin@techshop.com";
         var adminUser = await userManager.FindByEmailAsync(adminEmail);
 
@@ -23,6 +34,12 @@ public static class DataSeeder
             };
             
             await userManager.CreateAsync(adminUser, "Password123!");
+        }
+
+        // 2. Przypisanie roli Admin dla głównego konta
+        if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
+        {
+            await userManager.AddToRoleAsync(adminUser, "Admin");
         }
 
         if (!await context.Categories.AnyAsync())

@@ -31,6 +31,7 @@ public static class ConfigureServices
         builder.Services.AddAuthorization();
 
         builder.Services.AddIdentityApiEndpoints<AppUser>()
+            .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>();
 
         // 4. Swagger

@@ -1,10 +1,21 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using TechShopFinal.Api.Common.Api;
-using TechShopFinal.Api.Common.Pagination; // Dodany namespace
+using TechShopFinal.Api.Common.Api.Extensions;
+using TechShopFinal.Api.Common.Pagination;
 using TechShopFinal.Api.Data;
 
 namespace TechShopFinal.Api.Products.Endpoints;
+
+// 1. ZMIANA: Nowy dedykowany rekord żądania (zamiast samego PagedRequest)
+public record GetProductsRequest(
+    string? SearchTerm,
+    Guid? CategoryId,
+    string? SortColumn,
+    string? SortOrder,
+    int PageNumber = 1,
+    int PageSize = 10
+);
 
 public class GetProducts : IEndpoint
 {
@@ -15,22 +26,57 @@ public class GetProducts : IEndpoint
     }
 
     private static async Task<Ok<PagedResult<ProductResponse>>> HandleAsync(
-        [AsParameters] PagedRequest pagedRequest, 
+        [AsParameters] GetProductsRequest request, // Pobieramy wszystkie filtry z URL
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        // Baza zapytania (jeszcze NIE wysłana do bazy danych)
         var query = dbContext.Products
             .AsNoTracking()
             .Include(p => p.Categories)
-            .OrderByDescending(p => p.CreationDate)
-            .Select(p => new ProductResponse(
-                p.Id, p.Title, p.Description, p.Price, p.ImageUrl, 
-                p.CreationDate, p.CreatorUserId, 
-                p.Categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList()));
+            .AsQueryable();
 
-        var pagedResult = await query.ToPagedResultAsync(
-            pagedRequest.PageNumber, 
-            pagedRequest.PageSize, 
+        // 2. FILTROWANIE: Wyszukiwarka tekstowa
+        if (!string.IsNullOrWhiteSpace(request.SearchTerm))
+        {
+            var searchTerm = request.SearchTerm.ToLower();
+            query = query.Where(p => 
+                p.Title.ToLower().Contains(searchTerm) || 
+                (p.Description != null && p.Description.ToLower().Contains(searchTerm)));
+        }
+
+        // 3. FILTROWANIE: Po wybranej kategorii
+        if (request.CategoryId.HasValue)
+        {
+            query = query.Where(p => p.Categories.Any(c => c.Id == request.CategoryId.Value));
+        }
+
+        // 4. SORTOWANIE: Dynamiczne dobieranie kolumn
+        query = request.SortColumn?.ToLower() switch
+        {
+            "price" => request.SortOrder?.ToLower() == "desc" 
+                ? query.OrderByDescending(p => p.Price) 
+                : query.OrderBy(p => p.Price),
+                
+            "title" => request.SortOrder?.ToLower() == "desc" 
+                ? query.OrderByDescending(p => p.Title) 
+                : query.OrderBy(p => p.Title),
+                
+            _ => request.SortOrder?.ToLower() == "asc" // Domyślnie sortujemy po dacie
+                ? query.OrderBy(p => p.CreationDate)
+                : query.OrderByDescending(p => p.CreationDate)
+        };
+
+        // 5. MAPOWANIE NA DTO
+        var mappedQuery = query.Select(p => new ProductResponse(
+            p.Id, p.Title, p.Description, p.Price, p.ImageUrl, 
+            p.CreationDate, p.CreatorUserId, 
+            p.Categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList()));
+
+        // 6. EGZEKUCJA (Wysyłka SQL do bazy) I PAGINACJA
+        var pagedResult = await mappedQuery.ToPagedResultAsync(
+            request.PageNumber, 
+            request.PageSize, 
             cancellationToken);
 
         return TypedResults.Ok(pagedResult);

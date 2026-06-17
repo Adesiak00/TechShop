@@ -12,29 +12,29 @@ public class GetProductComments : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/products/{productId:guid}/comments", HandleAsync)
+        // 1. ZMIANA: {productId:guid} -> {id:guid}
+        app.MapGet("/api/products/{id:guid}/comments", HandleAsync)
             .WithTags("Comments")
             .EnsureEntityExists<Product>();
     }
 
     private static async Task<Ok<PagedResult<CommentResponse>>> HandleAsync(
-        Guid productId,
-        [AsParameters]PagedRequest pagedRequest,
+        Guid id, // 2. ZMIANA: argument zmieniony z productId na id
+        [AsParameters] PagedRequest pagedRequest,
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
         var query = dbContext.Comments
             .AsNoTracking()
-            .Where(c => c.ProductId == productId)
+            .Where(c => c.ProductId == id) // 3. ZMIANA: filtrowanie po zmiennej id
             .OrderByDescending(c => c.CreationDate)
             .Select(c => new CommentResponse(c.Id, c.ProductId, c.Description, c.CreationDate, c.CreatorUserId));
 
-
         var pagedResult = await query.ToPagedResultAsync(
-            pagedRequest.PageNumber,
-            pagedRequest.PageSize,
+            pagedRequest.PageNumber, 
+            pagedRequest.PageSize, 
             cancellationToken);
-        
+
         return TypedResults.Ok(pagedResult);
     }
 }

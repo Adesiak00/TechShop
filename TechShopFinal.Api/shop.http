@@ -1,11 +1,11 @@
 @host = http://localhost:5133
 @email = admin@techshop.com
 @password = Password123!
-@token = CfDJ8JboE7-3usZNug4iXBny5gcUB4U2PiP2ZJJSyFaexqpWlUrH4UKUW-uXg7-5Dhb93S_0qEBed6sB8HoP2MT9xUVF2bTdPX2YQ2MsV7_p1W05hd-J1IbjQyVlctjX4srDfbhPjQyPHlc0ZTw5kU72J2-m41S0MXA3SH85zQFnLYbziTQTwuh1DJNiG5WAGaBA608Y-L5pHfeyu3LvEy_c7ZQtwE3AhhVuCYdtLVscu2TleYoBXSjOfeHeQdA1t76utTOfYJC9cAbXTOoTYJQLHpxJaL5-rhEubCEwnVQNoH1BcSpLxAWNLOQ-XQ8AKfhQXA6Ymf7rlsyCzpEwmFj9XB6upRf6gr-9bUS6tLKmpcANUqDvaNpd5y1q2fx9NwRrgm7bsHLu-r3zhdcLKYeOobPR671xE-B4GkwWGuXudODzIIwhjUs7_klqFU820S9OPuZofFDvchRXxvIJ1xXkkkijh1c4hwUon1cB_RWMIFdazxZd4LbMY0HBix0kq0QBItolEeNOXAz6hOp3f0RkCuyPxOQQ-Cr1t_-nkIeOiEc7fJV97Vg1B1vvrPwd_NK2vkTCKQG6-AiX6Xk8KkPYYcrDbJDbntMan5HJwbUveftxjZf19IL7kbQd8BIbn18BrWIsLOAdNKqCzVqRPNKIcFpmPIoD1OjF-pXBSJ_Bk_1MA9KOAfbWeeYIJjTGBQWV6obqc0l-asJ5fig9oBf5_k8
+@token = CfDJ8JboE7-3usZNug4iXBny5gfHpzc3qFnm1Ig-8IQwLuhEtWB1oW9hvALETt-4_xetqDryG8Vx0ozCve3APjM6Ryth11YILyI0BOi_0tVlg9fvTf4vZtw8Z-pKR-dHDSNFyMEzGJBZM1J4mf9KEExesJjso9cFnknCSA6aIKpnhPtZL3dA13gaIFPL1b0cP4PuQuunK8RYVhOJCBYTlLCRg3qDy5dBFHEs41gLt-WAapg7Ot4aEeY4TWFj-rp2hv33K7wOQvNpcvQhr_5P9Web_aVQEa-QPyhrU6Zova5KZmmZCbaiVKaq1-nEktsl_Qq88UwHi_9yWCHV2NIa5_EzbJMuhl1i4MJ0shvLvOpdcVQNT_la2heChlM1bE_A8KITdDG6gVuFtyL-6nUnthZ6eMQsYhjwjlihcaYqc2r3D5o3NOXnscQTDNWRcZR834sY632xrB1cXYoEgAlU-ST0_Z9Ls2svZOPfqdv-H-sx6dT00clhewNL7RDdP9t0XGjJzsgH4Qx9xrGh_tOOVdaYz_scdVsf-jvTLQo6uUShBhc_N9_cBqLIQUupRZjqyvhNjY4-WfGEv5_y21zch3KclTs9h6ZH9dgctNQQQymDynh6Id-MB6Xb_w52PEnUFGkNjoooLwk-EdYGjVFsFMdgyKZaOdhkCgS4lPTl2dJ8hmc6ITUD8gCB-wWK0J25sM2ZaoyWkUF4csxE9byDEJd382c
 
 # Identyfikatory do testów (podmień po utworzeniu zasobów)
 @categoryId = 1011e3ea-428e-4617-8787-1d4c9b800e8f
-@productId = wklej-guid-produktu
+@productId = 23e124ef-506e-4c15-9acb-e621bbaae199
 @commentId = wklej-guid-komentarza
 
 ### =========================================
@@ -75,10 +75,10 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "title": "ASUS ROG Strix",
-  "description": "Potężny laptop do gier z RTX 4090.",
-  "price": 12999.99,
-  "imageUrl": "https://example.com/asus-rog.png",
+  "title": "MSI Vector 16",
+  "description": "Śmiga",
+  "price": 10099.99,
+  "imageUrl": "https://storage-asset.msi.com/global/picture/product/product_1704767181bd644da2e79ccfbc24341b997e45b885.webp",
   "categoryIds": [
     "{{categoryId}}"
   ]

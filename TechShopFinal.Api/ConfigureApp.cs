@@ -59,10 +59,10 @@ public static class ConfigureApp
 
         // 6. Uruchomienie migracji i Seedera asynchronicznie podczas startu aplikacji
         using var scope = app.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>(); // NOWOŚĆ
 
-        await context.Database.MigrateAsync(); 
-        await DataSeeder.SeedDataAsync(context, userManager); 
+await DataSeeder.SeedDataAsync(dbContext, userManager, roleManager);
     }
 }
