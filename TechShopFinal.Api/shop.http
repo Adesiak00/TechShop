@@ -1,0 +1,144 @@
+@host = http://localhost:5133
+@email = admin@techshop.com
+@password = Password123!
+@token = CfDJ8JboE7-3usZNug4iXBny5gcUB4U2PiP2ZJJSyFaexqpWlUrH4UKUW-uXg7-5Dhb93S_0qEBed6sB8HoP2MT9xUVF2bTdPX2YQ2MsV7_p1W05hd-J1IbjQyVlctjX4srDfbhPjQyPHlc0ZTw5kU72J2-m41S0MXA3SH85zQFnLYbziTQTwuh1DJNiG5WAGaBA608Y-L5pHfeyu3LvEy_c7ZQtwE3AhhVuCYdtLVscu2TleYoBXSjOfeHeQdA1t76utTOfYJC9cAbXTOoTYJQLHpxJaL5-rhEubCEwnVQNoH1BcSpLxAWNLOQ-XQ8AKfhQXA6Ymf7rlsyCzpEwmFj9XB6upRf6gr-9bUS6tLKmpcANUqDvaNpd5y1q2fx9NwRrgm7bsHLu-r3zhdcLKYeOobPR671xE-B4GkwWGuXudODzIIwhjUs7_klqFU820S9OPuZofFDvchRXxvIJ1xXkkkijh1c4hwUon1cB_RWMIFdazxZd4LbMY0HBix0kq0QBItolEeNOXAz6hOp3f0RkCuyPxOQQ-Cr1t_-nkIeOiEc7fJV97Vg1B1vvrPwd_NK2vkTCKQG6-AiX6Xk8KkPYYcrDbJDbntMan5HJwbUveftxjZf19IL7kbQd8BIbn18BrWIsLOAdNKqCzVqRPNKIcFpmPIoD1OjF-pXBSJ_Bk_1MA9KOAfbWeeYIJjTGBQWV6obqc0l-asJ5fig9oBf5_k8
+
+# Identyfikatory do testów (podmień po utworzeniu zasobów)
+@categoryId = 1011e3ea-428e-4617-8787-1d4c9b800e8f
+@productId = wklej-guid-produktu
+@commentId = wklej-guid-komentarza
+
+### =========================================
+### AUTORYZACJA (IDENTITY)
+### =========================================
+
+### 1. Rejestracja nowego użytkownika
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+
+### 2. Logowanie (skopiuj accessToken z odpowiedzi i wklej do zmiennej @token na górze pliku!)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+
+### =========================================
+### KATEGORIE
+### =========================================
+
+### 1. Utworzenie kategorii (WYMAGA AUTORYZACJI)
+POST {{host}}/api/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Laptopy Gamingowe"
+}
+
+### 2. Pobranie wszystkich kategorii (PUBLICZNE)
+GET {{host}}/api/categories
+
+### 3. Pobranie kategorii po ID
+GET {{host}}/api/categories/{{categoryId}}
+
+### 4. Aktualizacja kategorii
+PUT {{host}}/api/categories/{{categoryId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Laptopy i Komputery"
+}
+
+### 5. Usunięcie kategorii (Soft Delete)
+DELETE {{host}}/api/categories/{{categoryId}}
+Authorization: Bearer {{token}}
+
+
+### =========================================
+### PRODUKTY
+### =========================================
+
+### 1. Utworzenie produktu (WYMAGA AUTORYZACJI - Dodaj poprawne ID z utworzonej wcześniej kategorii)
+POST {{host}}/api/products
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "ASUS ROG Strix",
+  "description": "Potężny laptop do gier z RTX 4090.",
+  "price": 12999.99,
+  "imageUrl": "https://example.com/asus-rog.png",
+  "categoryIds": [
+    "{{categoryId}}"
+  ]
+}
+
+### 2. Pobranie produktów z PAGINACJĄ (PUBLICZNE)
+GET {{host}}/api/products?pageNumber=1&pageSize=5
+
+### 3. Pobranie produktu po ID
+GET {{host}}/api/products/{{productId}}
+
+### 4. Aktualizacja produktu
+PUT {{host}}/api/products/{{productId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "title": "ASUS ROG Strix V2",
+  "description": "Zaktualizowany opis.",
+  "price": 11999.99,
+  "imageUrl": "https://example.com/asus-rog-v2.png",
+  "categoryIds": [
+    "{{categoryId}}"
+  ]
+}
+
+### 5. Usunięcie produktu (Soft Delete)
+DELETE {{host}}/api/products/{{productId}}
+Authorization: Bearer {{token}}
+
+
+### =========================================
+### KOMENTARZE
+### =========================================
+
+### 1. Dodanie komentarza do produktu (WYMAGA AUTORYZACJI)
+POST {{host}}/api/comments
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "productId": "{{productId}}",
+  "description": "Świetny sprzęt, polecam gorąco!"
+}
+
+### 2. Pobranie wszystkich komentarzy dla konkretnego produktu (PUBLICZNE)
+GET {{host}}/api/products/{{productId}}/comments
+
+### 3. Pobranie komentarza po ID
+GET {{host}}/api/comments/{{commentId}}
+
+### 4. Edycja komentarza
+PUT {{host}}/api/comments/{{commentId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "description": "Zmieniam zdanie, trochę głośno chodzą wiatraki."
+}
+
+### 5. Usunięcie komentarza (Soft Delete)
+DELETE {{host}}/api/comments/{{commentId}}
+Authorization: Bearer {{token}}
