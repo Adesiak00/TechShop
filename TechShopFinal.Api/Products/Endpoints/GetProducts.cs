@@ -26,17 +26,15 @@ public class GetProducts : IEndpoint
     }
 
     private static async Task<Ok<PagedResult<ProductResponse>>> HandleAsync(
-        [AsParameters] GetProductsRequest request, // Pobieramy wszystkie filtry z URL
+        [AsParameters] GetProductsRequest request, 
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        // Baza zapytania (jeszcze NIE wysłana do bazy danych)
         var query = dbContext.Products
             .AsNoTracking()
             .Include(p => p.Categories)
             .AsQueryable();
 
-        // 2. FILTROWANIE: Wyszukiwarka tekstowa
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
             var searchTerm = request.SearchTerm.ToLower();
@@ -45,13 +43,11 @@ public class GetProducts : IEndpoint
                 (p.Description != null && p.Description.ToLower().Contains(searchTerm)));
         }
 
-        // 3. FILTROWANIE: Po wybranej kategorii
         if (request.CategoryId.HasValue)
         {
             query = query.Where(p => p.Categories.Any(c => c.Id == request.CategoryId.Value));
         }
 
-        // 4. SORTOWANIE: Dynamiczne dobieranie kolumn
         query = request.SortColumn?.ToLower() switch
         {
             "price" => request.SortOrder?.ToLower() == "desc" 
@@ -62,18 +58,16 @@ public class GetProducts : IEndpoint
                 ? query.OrderByDescending(p => p.Title) 
                 : query.OrderBy(p => p.Title),
                 
-            _ => request.SortOrder?.ToLower() == "asc" // Domyślnie sortujemy po dacie
+            _ => request.SortOrder?.ToLower() == "asc" 
                 ? query.OrderBy(p => p.CreationDate)
                 : query.OrderByDescending(p => p.CreationDate)
         };
 
-        // 5. MAPOWANIE NA DTO
         var mappedQuery = query.Select(p => new ProductResponse(
             p.Id, p.Title, p.Description, p.Price, p.ImageUrl, 
             p.CreationDate, p.CreatorUserId, 
             p.Categories.Select(c => new CategoryDto(c.Id, c.Name)).ToList()));
 
-        // 6. EGZEKUCJA (Wysyłka SQL do bazy) I PAGINACJA
         var pagedResult = await mappedQuery.ToPagedResultAsync(
             request.PageNumber, 
             request.PageSize, 

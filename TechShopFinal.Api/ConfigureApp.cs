@@ -17,13 +17,10 @@ public static class ConfigureApp
             app.UseSwaggerUI();
         }
 
-        // 2. Globalna obsługa wyjątków (zawsze na początku potoku)
-        app.UseExceptionHandler(); 
-        
-        // 3. CORS (przed autoryzacją)
+        app.UseExceptionHandler();
+
         app.UseCors("AllowFrontend");
 
-       // 4. Autentykacja i Autoryzacja (Kolejność ma znaczenie!)
         app.UseAuthentication();
         app.UseAuthorization();
 
@@ -31,14 +28,14 @@ public static class ConfigureApp
         {
             await next();
 
-            if ((context.Response.StatusCode == StatusCodes.Status401Unauthorized || 
-                 context.Response.StatusCode == StatusCodes.Status403Forbidden) && 
+            if ((context.Response.StatusCode == StatusCodes.Status401Unauthorized ||
+                 context.Response.StatusCode == StatusCodes.Status403Forbidden) &&
                 !context.Response.HasStarted)
             {
                 var problemDetailsService = context.RequestServices.GetRequiredService<IProblemDetailsService>();
-                
+
                 context.Response.ContentType = "application/problem+json";
-                
+
                 await problemDetailsService.WriteAsync(new ProblemDetailsContext
                 {
                     HttpContext = context,
@@ -46,8 +43,8 @@ public static class ConfigureApp
                     {
                         Status = context.Response.StatusCode,
                         Title = context.Response.StatusCode == StatusCodes.Status401Unauthorized ? "Unauthorized" : "Forbidden",
-                        Detail = context.Response.StatusCode == StatusCodes.Status401Unauthorized 
-                            ? "Brak prawidłowego tokenu uwierzytelniającego lub Twój token wygasł." 
+                        Detail = context.Response.StatusCode == StatusCodes.Status401Unauthorized
+                            ? "Brak prawidłowego tokenu uwierzytelniającego lub Twój token wygasł."
                             : "Nie masz wystarczających uprawnień do wykonania tej operacji."
                     }
                 });
@@ -57,12 +54,13 @@ public static class ConfigureApp
         app.MapEndpoints();
         app.MapGroup("/api/auth").MapIdentityApi<AppUser>();
 
-        // 6. Uruchomienie migracji i Seedera asynchronicznie podczas startu aplikacji
         using var scope = app.Services.CreateScope();
-var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>(); // NOWOŚĆ
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>(); // NOWOŚĆ
 
-await DataSeeder.SeedDataAsync(dbContext, userManager, roleManager);
+        await dbContext.Database.MigrateAsync();
+
+        await DataSeeder.SeedDataAsync(dbContext, userManager, roleManager);
     }
 }

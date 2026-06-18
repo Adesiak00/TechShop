@@ -17,7 +17,6 @@ public class GetCategories : IEndpoint
         AppDbContext dbContext,
         CancellationToken cancellationToken)
     {
-        // Uwaga: Dzięki Global Query Filter, usunięte kategorie (IsDeleted == true) nie zostaną pobrane
         var categories = await dbContext.Categories
             .AsNoTracking()
             .Select(c => new CategoryResponse(c.Id, c.Name))

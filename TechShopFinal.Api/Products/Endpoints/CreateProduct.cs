@@ -10,7 +10,6 @@ using TechShopFinal.Api.Data.Types;
 
 namespace TechShopFinal.Api.Products.Endpoints;
 
-// NOWE DTO: Dodajemy CategoryDto i zmieniamy List<Guid> na List<CategoryDto>
 public record CategoryDto(Guid Id, string Name);
 public record ProductResponse(Guid Id, string Title, string? Description, decimal Price, string? ImageUrl, DateTime CreationDate, Guid CreatorUserId, List<CategoryDto> Categories);
 
@@ -61,7 +60,6 @@ public class CreateProduct : IEndpoint
         dbContext.Products.Add(product);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        // ZMIANA W MAPOWANIU: Mapujemy obiekty Category na CategoryDto
         var response = new ProductResponse(
             product.Id, product.Title, product.Description, product.Price, 
             product.ImageUrl, product.CreationDate, product.CreatorUserId, 

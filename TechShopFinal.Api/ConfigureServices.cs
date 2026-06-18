@@ -13,7 +13,6 @@ public static class ConfigureServices
 {
     public static void AddServices(this WebApplicationBuilder builder)
     {
-        // 1. Rejestracja automatyczna endpointów z naszej architektury REPR
         builder.Services.AddEndpoints(typeof(ConfigureServices).Assembly);
 
         builder.Services.AddSingleton<SoftDeleteInterceptor>();
@@ -26,7 +25,6 @@ public static class ConfigureServices
                    .AddInterceptors(interceptor);
         });
 
-        // 3. Identity API, Autentykacja i Autoryzacja (To eliminuje Twój błąd!)
         builder.Services.AddAuthentication();
         builder.Services.AddAuthorization();
 
@@ -34,11 +32,9 @@ public static class ConfigureServices
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>();
 
-        // 4. Swagger
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        // 5. CORS dla frontendu
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("AllowFrontend", policy => 
@@ -48,11 +44,9 @@ public static class ConfigureServices
                       .AllowCredentials());
         });
 
-        // 6. Globalna obsługa błędów
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails();
 
-        // 7. Rejestracja walidatorów z pakietu FluentValidation
         builder.Services.AddValidatorsFromAssemblyContaining<IEndpoint>();
     }
 }

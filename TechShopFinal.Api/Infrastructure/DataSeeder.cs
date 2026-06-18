@@ -59,7 +59,7 @@ public static class DataSeeder
                     Title = "MacBook Pro 16",
                     Description = "Potężny laptop dla profesjonalistów z układem Apple Silicon.",
                     Price = 14999.00m,
-                    ImageUrl = "https://example.com/macbook.png",
+                    ImageUrl = "https://assets.mmsrg.com/isr/166325/c1/-/ASSET_MMS_172248970?x=536&y=402&format=jpg&quality=80&sp=yes&strip=yes&trim&ex=536&ey=402&align=center&resizesource&unsharp=1.5x1+0.7+0.02&cox=0&coy=0&cdx=536&cdy=402",
                     CreationDate = DateTime.UtcNow,
                     CreatorUserId = adminUser.Id, 
                     Categories = [laptops]        
@@ -71,7 +71,7 @@ public static class DataSeeder
                     Title = "iPhone 15 Pro",
                     Description = "Najnowszy smartfon od Apple z tytanową obudową.",
                     Price = 5999.00m,
-                    ImageUrl = "https://example.com/iphone.png",
+                    ImageUrl = "https://m.media-amazon.com/images/I/71657TiFeHL._AC_SL1500_.jpg",
                     CreationDate = DateTime.UtcNow,
                     CreatorUserId = adminUser.Id,
                     Categories = [phones, accessories] 

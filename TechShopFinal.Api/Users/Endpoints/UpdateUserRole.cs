@@ -13,7 +13,7 @@ public class UpdateUserRole : IEndpoint
     {
         app.MapPut("/api/users/{id:guid}/role", HandleAsync)
             .WithTags("Users")
-            .RequireAuthorization(policy => policy.RequireRole("Admin")); // Tylko Admin może zmieniać role
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
 
     private static async Task<Results<NoContent, NotFound, ProblemHttpResult>> HandleAsync(
@@ -33,7 +33,6 @@ public class UpdateUserRole : IEndpoint
             return TypedResults.Problem("Podana rola nie istnieje.", statusCode: StatusCodes.Status400BadRequest);
         }
 
-        // Usuwamy wszystkie obecne role i nadajemy nową (np. awans ze zwykłego Usera na Admina)
         var currentRoles = await userManager.GetRolesAsync(user);
         await userManager.RemoveFromRolesAsync(user, currentRoles);
         await userManager.AddToRoleAsync(user, request.RoleName);

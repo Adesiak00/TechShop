@@ -13,7 +13,7 @@ public class GetCommentById : IEndpoint
     {
         app.MapGet("/api/comments/{id:guid}", HandleAsync)
             .WithTags("Comments")
-            .EnsureEntityExists<Comment>(); // Filtr pilnuje, żeby komentarz istniał i nie miał IsDeleted == true
+            .EnsureEntityExists<Comment>();
     }
 
     private static async Task<Ok<CommentResponse>> HandleAsync(

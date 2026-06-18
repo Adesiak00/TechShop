@@ -42,21 +42,19 @@ public class UpdateProduct : IEndpoint
             .Include(p => p.Categories) // Śledzimy relacje!
             .FirstAsync(p => p.Id == id, cancellationToken);
 
-        // Aktualizacja prostych właściwości
         product.Title = request.Title;
         product.Description = request.Description;
         product.Price = request.Price;
         product.ImageUrl = request.ImageUrl;
 
-        // Aktualizacja kategorii (Many-to-Many)
         var newCategories = await dbContext.Categories
             .Where(c => request.CategoryIds.Contains(c.Id))
             .ToListAsync(cancellationToken);
 
-        product.Categories.Clear(); // Usuwa obecne powiązania
+        product.Categories.Clear();
         foreach (var category in newCategories)
         {
-            product.Categories.Add(category); // Dodaje nowe
+            product.Categories.Add(category); 
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);

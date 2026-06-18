@@ -19,5 +19,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         builder.Entity<Category>().HasQueryFilter(x => !x.IsDeleted);
         builder.Entity<Product>().HasQueryFilter(x => !x.IsDeleted);
         builder.Entity<Comment>().HasQueryFilter(x => !x.IsDeleted);
+
+        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
+        {
+            builder.Entity<Product>()
+            .Property(p => p.Price)
+            .HasConversion<double>();
+        }
     }
+    
+    
 }

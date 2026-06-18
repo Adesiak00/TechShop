@@ -14,7 +14,7 @@ public class GetUsers : IEndpoint
     {
         app.MapGet("/api/users", HandleAsync)
             .WithTags("Users")
-            .RequireAuthorization(policy => policy.RequireRole("Admin")); // Zabezpieczenie na poziomie roli
+            .RequireAuthorization(policy => policy.RequireRole("Admin"));
     }
 
     private static async Task<Ok<List<UserResponse>>> HandleAsync(
